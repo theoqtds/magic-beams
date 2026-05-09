@@ -33,10 +33,16 @@ public class Main {
             BeamSolver pathSolver = new BeamSolver(noRows, noColumns, noChosenColumns, startingColumn, noBeams);
 
             // Read the grid row by row and add it to the solver's map
-            for (int j = 0; j < noBeams; j++)
-                pathSolver.addBeam(input.readLine().toCharArray(), j);
+            for (int j = 0; j < noBeams; j++) {
+                String[] beamChars = input.readLine().split(SEPARATOR);
+                int row = Integer.parseInt(beamChars[0]);
+                int column = Integer.parseInt(beamChars[1]);
+                int length = Integer.parseInt(beamChars[2]);
+                char direction = beamChars[3].charAt(0);
+                pathSolver.addBeam(j, row, column, length, direction);
+            }
 
-            // Calculate the result using DP and print it to standard output
+            // Calculate the result and print it to standard output
             System.out.println(pathSolver.answer());
         }
     }

@@ -1,13 +1,14 @@
 import graph.Digraph;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class BeamSolver {
     public static final char NORTH = 'N';
     public static final char EAST = 'E';
     public static final char WEST = 'W';
     public static final char SOUTH = 'S';
-    public static final char CONVERSION_CHAR = '0';
     public static final int LABEL = 1;
 
     private final int noRows;
@@ -31,27 +32,55 @@ public class BeamSolver {
         this.digraph = new Digraph<>(noBeams);
     }
 
-    public void addBeam(char[] beam, int j) {
-        beams[j] = new Beam(j, convertCharToInt(beam[0]), convertCharToInt(beam[1]), convertCharToInt(beam[2]), beam[3]);
+    public void addBeam(int id, int row, int column, int length, char direction) {
+        beams[id] = new Beam(id, row, column, length, direction);
     }
 
-    public int answer() {
+    public String answer() {
         fillBeamMap();
         fillGraph();
         boolean[] mustBeRemoved = findBeamsToRemove();
 
-        return -1;
+        boolean anyToRemove = false;
+        for (boolean b : mustBeRemoved) {
+            if (b) {
+                anyToRemove = true;
+                break;
+            }
+        }
+
+        if (!anyToRemove) return "False alarm";
+
+        return "";
     }
 
     //BFS
     private boolean[] findBeamsToRemove() {
-        boolean[] mustBeRemoved = new boolean[noBeams];
-        return null;
+        boolean[] found = new boolean[noBeams];
+
+        for (int i = startingColumn; i < startingColumn + noChosenColumns; i++) {
+            for (int j = 0; j < noRows; j++) {
+                int beamId = beamMap[j][i];
+                if (beamId != -1 && !found[beamId]) {
+                    bfsExplore(digraph, found, beamId);
+                }
+            }
+        }
+        return found;
     }
 
-    //Fast conversion from character to integer
-    private int convertCharToInt(char ch) {
-        return ch - CONVERSION_CHAR;
+    private void bfsExplore(Digraph<Integer> graph, boolean[] found, int root) {
+        Queue<Integer> waiting = new LinkedList<>();
+        waiting.add(root);
+        found[root] = true;
+        do {
+            int node = waiting.remove();
+            for (int v : graph.outAdjacentNodes(node))
+                if (!found[v]) {
+                    found[v] = true;
+                    waiting.add(v);
+                }
+        } while (!waiting.isEmpty());
     }
 
     private void fillBeamMap() {
@@ -149,10 +178,6 @@ public class BeamSolver {
                 seenBeams[blockingBeamId] = beam.id();
             }
         }
-    }
-
-    private void filterGraph() {
-
     }
 }
 
