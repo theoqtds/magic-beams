@@ -9,12 +9,12 @@ public class Digraph<L> extends AnyGraph<L> {
     }
 
     @Override
-    void addEdge(int node1, int node2, L label) {
+    public void addEdge(int node1, int node2, L label) {
         edges.add(new Edge<L>(label, node1, node2));
         nodes[node1].add(node2);
     }
 
-    int inDegree(int node) {
+    public int inDegree(int node) {
         int degree = 0;
         for (List<Integer> nodeSuccessors : nodes) {
             if (nodeSuccessors != null && nodeSuccessors.contains(node))
@@ -23,14 +23,14 @@ public class Digraph<L> extends AnyGraph<L> {
         return degree;
     }
 
-    int outDegree(int node) {
+    public int outDegree(int node) {
         if (nodes[node].isEmpty())
             return 0;
         else
             return nodes[node].size();
     }
 
-    Iterable<Integer> inAdjacentNodes(int node) {
+    public Iterable<Integer> inAdjacentNodes(int node) {
         List<Integer> result = new ArrayList<>();
 
         for (int i = 0; i < numNodes(); i++) {
@@ -41,15 +41,15 @@ public class Digraph<L> extends AnyGraph<L> {
         return result;
     }
 
-    Iterable<Integer> outAdjacentNodes(int node) {
+    public Iterable<Integer> outAdjacentNodes(int node) {
         return nodes[node];
     }
 
-    Iterable<Edge<L>> inIncidentEdges(int node) {
+    public Iterable<Edge<L>> inIncidentEdges(int node) {
         return edges.stream().filter(edge -> node == edge.secondNode()).toList();
     }
 
-    Iterable<Edge<L>> outIncidentEdges(int node) {
+    public Iterable<Edge<L>> outIncidentEdges(int node) {
         return edges.stream().filter(edge -> node == edge.firstNode()).toList();
     }
 }

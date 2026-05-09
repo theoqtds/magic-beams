@@ -30,7 +30,7 @@ public class Main {
             int noBeams = Integer.parseInt(input.readLine());
             
             // Initialize a new solver for this specific test case
-            PathSolver pathSolver = new PathSolver(noRows, noColumns, noChosenColumns, startingColumn, noBeams);
+            BeamSolver pathSolver = new BeamSolver(noRows, noColumns, noChosenColumns, startingColumn, noBeams);
 
             // Read the grid row by row and add it to the solver's map
             for (int j = 0; j < noBeams; j++)

@@ -19,7 +19,7 @@ public abstract class AnyGraph<L> {
         edges = new ArrayList<>();
     }
 
-    Iterable<Integer> nodes() {
+    public Iterable<Integer> nodes() {
         List<Integer> result = new ArrayList<>();
         for (int i = 0; i < numNodes(); i++) {
             result.add(i);
@@ -27,28 +27,28 @@ public abstract class AnyGraph<L> {
         return result;
     }
 
-    Iterable<Edge<L>> edges() {
+    public Iterable<Edge<L>> edges() {
         return edges;
     }
 
-    int numNodes() {
+    public int numNodes() {
         return nodes.length;
     }
 
-    int numEdges() {
+    public int numEdges() {
         return edges.size();
     }
 
-    int aNode() {
+    public int aNode() {
         if (numNodes() > 0) return 0;
         return -1;
     }
 
-    void addEdge(int node1, int node2, L label) {
+    public void addEdge(int node1, int node2, L label) {
 
     }
 
-    boolean edgeExists(int node1, int node2) {
+    public boolean edgeExists(int node1, int node2) {
         return nodes[node1].contains(node2);
     }
 }
