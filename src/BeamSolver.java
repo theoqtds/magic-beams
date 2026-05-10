@@ -98,7 +98,7 @@ public class BeamSolver {
             }
         }
 
-        do {
+        while (!ready.isEmpty()) {
             int node = ready.remove();
             permutation[permSize++] = node;
             for (int v : digraph.outAdjacentNodes(node)) {
@@ -108,7 +108,6 @@ public class BeamSolver {
                 }
             }
         }
-        while (!ready.isEmpty());
 
         if (permSize < beamsRemoved) return "Disaster";
         if (permSize == 0) return "";
