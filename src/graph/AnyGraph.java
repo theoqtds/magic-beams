@@ -1,30 +1,38 @@
 package graph;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 public abstract class AnyGraph<L> {
-    protected List<Integer>[] nodes;
+    protected List<Integer>[] successorNodes;
     protected List<Edge<L>> edges;
 
     @SuppressWarnings("unchecked")
     public AnyGraph(int numNodes) {
-        nodes = new List[numNodes];
+        successorNodes = new List[numNodes];
 
         for (int i = 0; i < numNodes; i++) {
-            nodes[i] = new LinkedList<>();
+            successorNodes[i] = new LinkedList<>();
         }
 
         edges = new ArrayList<>();
     }
 
     public Iterable<Integer> nodes() {
-        List<Integer> result = new ArrayList<>();
-        for (int i = 0; i < numNodes(); i++) {
-            result.add(i);
-        }
-        return result;
+        return () -> new Iterator<Integer>() {
+            int current = 0;
+            @Override
+            public boolean hasNext() {
+                return current < numNodes();
+            }
+
+            @Override
+            public Integer next() {
+                return current++;
+            }
+        };
     }
 
     public Iterable<Edge<L>> edges() {
@@ -32,7 +40,7 @@ public abstract class AnyGraph<L> {
     }
 
     public int numNodes() {
-        return nodes.length;
+        return successorNodes.length;
     }
 
     public int numEdges() {
@@ -44,11 +52,9 @@ public abstract class AnyGraph<L> {
         return -1;
     }
 
-    public void addEdge(int node1, int node2, L label) {
-
-    }
+    public abstract void addEdge(int node1, int node2, L label);
 
     public boolean edgeExists(int node1, int node2) {
-        return nodes[node1].contains(node2);
+        return successorNodes[node1].contains(node2);
     }
 }
