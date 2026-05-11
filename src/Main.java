@@ -12,6 +12,7 @@ public class Main {
     private static final int STARTING_CHOSEN_COLUMN = 1;
     private static final String FALSE_MSG = "False Alarm";
     private static final String DISASTER_MSG  = "Disaster";
+    private static final String EMPTY  = "";
 
     public static void main(String[] args) throws IOException {
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
@@ -61,6 +62,8 @@ public class Main {
     }
 
     private static String stringifyResult(int[] permutation, int permSize) {
+        if (permSize == 0)
+            return EMPTY;
         StringBuilder sb = new StringBuilder();
         sb.append(permutation[0] + 1);
         for (int i = 1; i < permSize; i++) 

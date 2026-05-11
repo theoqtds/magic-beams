@@ -21,6 +21,7 @@ public class BeamSolver {
     private final int startingColumn;
     private final int noBeams;
 
+    private record findRemove(int amountFound, boolean[] found, int[] toRemove) {}
 
     private Beam[] beams;
     private int beamCount;
@@ -47,68 +48,68 @@ public class BeamSolver {
     public Answer answer() {
         fillBeamMap();
         fillGraph();
-        boolean[] mustBeRemoved = findBeamsToRemove();
+        findRemove findRemoveAnswer = findBeamsToRemove();
+        
+        if (findRemoveAnswer.amountFound() > 0)
+            return removeBeams(findRemoveAnswer);
 
-        return removeBeams(mustBeRemoved);
+        return new Answer(FALSE_ALARM, null, 0);
     }
-
+    
     //BFS
-    private boolean[] findBeamsToRemove() {
+    private findRemove findBeamsToRemove() {
         boolean[] found = new boolean[noBeams];
+        int[] toRemove  = new int[noBeams];
+        int amountFound = 0;
         for (int i = startingColumn; i < startingColumn + noChosenColumns; i++)
             for (int j = 0; j < noRows; j++) {
                 int beamId = beamIdMap[j][i];
                 if (beamId != EMPTY){
                     int beamIdx = beamId - 1;
-                    if (!found[beamIdx])
-                        bfsExplore(digraph, found, beamIdx);
+                    if (!found[beamIdx]){
+                        amountFound += bfsExplore(digraph, found, beamIdx, toRemove, amountFound);
+                    }
                 }
             }
-
-        return found;
+        return new findRemove(amountFound, found, toRemove);
     }
 
-    private void bfsExplore(Digraph<Integer> graph, boolean[] found, int root) {
+    private int bfsExplore(Digraph<Integer> graph, boolean[] found, int root, int[] toRemove, int toRemoveCount) {
+        int counter = toRemoveCount;
         Queue<Integer> waiting = new ArrayDeque<>();
         waiting.add(root);
         found[root] = true;
         do {
             // waiting contains the idx of the beams
             int node = waiting.remove();
+            toRemove[counter++] = node;
             for (int v : graph.inAdjacentNodes(node))
                 if (!found[v]) {
                     found[v] = true;
                     waiting.add(v);
                 }
         } while (!waiting.isEmpty());
+        return counter - toRemoveCount;
     }
 
     //Kahn's
-    private Answer removeBeams(boolean[] mustBeRemoved){
-        boolean anyToRemove = false;
-        // why not just check whether mustBeRemoved is empty (we are iterating over ALL THE BEAMS)
-        // (THAT IS 10060)
-        for (boolean b : mustBeRemoved) 
-            if (b) {
-                anyToRemove = true;
-                break;
-            }
+    private Answer removeBeams(findRemove info){
+        int permSize            = 0;
 
-        // this is the ugliest shit to man 
-        if (!anyToRemove) return new Answer(FALSE_ALARM, null, 0);
+        int[] inDegree          = new int[digraph.numNodes()];
+        int[] permutation       = new int[digraph.numNodes()];
+        Queue<Integer> ready    = new PriorityQueue<>();
 
-        int[] permutation = new int[digraph.numNodes()];
-        int permSize = 0;
-        int beamsRemoved = 0;
-        Queue<Integer> ready = new PriorityQueue<>();
-        int[] inDegree = new int[digraph.numNodes()];
+        int[] toRemove          = info.toRemove();
+        int beamsRemoved        = info.amountFound();
+        boolean[] mustBeRemoved = info.found();
 
-        for (int v : digraph.nodes()) {
-            if (mustBeRemoved[v]){
-                beamsRemoved++;
-                inDegree[v] = digraph.inDegree(v);
-                if (inDegree[v] == 0) ready.add(v);
-            }
+        // now we dont know which node we have to addres
+        for (int i = 0; i < beamsRemoved; i++) {
+            int remove = toRemove[i];
+            inDegree[remove] = digraph.inDegree(remove);
+            if (inDegree[remove] == 0) 
+                ready.add(remove);
         }
 
         while (!ready.isEmpty()) {
@@ -117,22 +118,31 @@ public class BeamSolver {
             for (int v : digraph.outAdjacentNodes(node)) {
                 if (mustBeRemoved[v]) {
                     inDegree[v]--;
-                    if (inDegree[v] == 0) ready.add(v);
+                    if (inDegree[v] == 0) 
+                        ready.add(v);
                 }
             }
         }
-
+        //System.out.println();
+        //System.out.printf("mustBeRemoved: ");
+        //for (boolean i : mustBeRemoved) {
+        //    System.out.printf(" " + i);
+        //}
+        //System.out.println();
+        //System.out.printf("permutation: ");
+        //for (int i : permutation) {
+        //    System.out.printf(" "+i);
+        //}
+        //System.out.println();
+        //System.out.println("beamsRemoved: "+beamsRemoved);
+        //System.out.println("permSize: "+permSize);
         if (permSize < beamsRemoved) return new Answer(DISASTER, null, 0);
         //i dont understand why we need this
         //if (permSize == 0) return "";
         return new Answer(FREE, permutation, permSize);
     }
 
-
     private void fillBeamMap() {
-//        for (int i = 0; i < noRows; i++) {
-//            Arrays.fill(beamIdMap[i], EMPTY);
-//        }
         for (int i = 0; i < noBeams; i++) {
             Beam beam = beams[i];
             switch (beam.direction()) {
@@ -145,6 +155,12 @@ public class BeamSolver {
     }
 
     private void fillGraph() {
+        // TODO: why have this, we can just skip the 
+        // whole beam if they go in the same direction. 
+        // if they dont go in the same direction, we wont have
+        // clashing problems 
+        // (beams are lines, cannot bend:
+        //      lines either touche 0, 1 or all points)
         int[] seenBeamsId = new int[noBeams];
 //Arrays.fill(seenBeamsId, EMPTY);
         for (int i = 0; i < noBeams; i++) {
@@ -246,17 +262,6 @@ public class BeamSolver {
         for (int i = beam.row(); i < lastFill; i++) {
             beamIdMap[i][beam.column()] = beam.id();
         }
-    }
-
-    // TODO THROW THIS IN MAIN
-
-    private static String stringifyResult(int[] permutation, int permSize) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(permutation[0] + 1);
-        for (int i = 1; i < permSize; i++) {
-            sb.append(" ").append(permutation[i] + 1);
-        }
-        return sb.toString();
     }
 }
 
