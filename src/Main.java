@@ -26,7 +26,6 @@ public class Main {
             int noChosenColumns = Integer.parseInt(chosenColumns[NO_CHOSEN_COLUMNS]);
             int startingColumn = Integer.parseInt(chosenColumns[STARTING_CHOSEN_COLUMN]);
 
-
             int noBeams = Integer.parseInt(input.readLine());
             
             // Initialize a new solver for this specific test case
@@ -39,7 +38,7 @@ public class Main {
                 int column = Integer.parseInt(beamChars[1]);
                 int length = Integer.parseInt(beamChars[2]);
                 char direction = beamChars[3].charAt(0);
-                pathSolver.addBeam(j, row, column, length, direction);
+                pathSolver.addBeam(row, column, length, direction);
             }
 
             // Calculate the result and print it to standard output
