@@ -4,11 +4,14 @@ import java.io.InputStreamReader;
 
 public class Main {
 
-    private static final String SEPARATOR   = " ";
+    private static final String SEPARATOR         = " ";
+    private static final String RESULT_SEPARATOR  = " ";
     private static final int    ROWS        = 0;
     private static final int    COLUMNS     = 1;
     private static final int NO_CHOSEN_COLUMNS = 0;
     private static final int STARTING_CHOSEN_COLUMN = 1;
+    private static final String FALSE_MSG = "False Alarm";
+    private static final String DISASTER_MSG  = "Disaster";
 
     public static void main(String[] args) throws IOException {
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
@@ -42,7 +45,26 @@ public class Main {
             }
 
             // Calculate the result and print it to standard output
-            System.out.println(pathSolver.answer());
+            Answer answer = pathSolver.answer();
+            switch (answer.result()) {
+                case BeamSolver.FALSE_ALARM:
+                    System.out.println(FALSE_MSG);
+                    break;
+                case BeamSolver.DISASTER:
+                    System.out.println(DISASTER_MSG);
+                    break;
+                case BeamSolver.FREE:
+                    System.out.println(stringifyResult(answer.permutation(), answer.permutationSize()));
+                    break;
+            }
         }
+    }
+
+    private static String stringifyResult(int[] permutation, int permSize) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(permutation[0] + 1);
+        for (int i = 1; i < permSize; i++) 
+            sb.append(RESULT_SEPARATOR).append(permutation[i] + 1);
+        return sb.toString();
     }
 }

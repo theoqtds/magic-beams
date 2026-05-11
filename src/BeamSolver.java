@@ -3,6 +3,7 @@ import org.w3c.dom.Node;
 
 import java.util.*;
 
+
 public class BeamSolver {
     public static final char NORTH = 'N';
     public static final char EAST = 'E';
@@ -10,12 +11,16 @@ public class BeamSolver {
     public static final char SOUTH = 'S';
     public static final int LABEL = 1;
     public static final int EMPTY = 0;
+    public static final int DISASTER    = 0;
+    public static final int FALSE_ALARM = 1;
+    public static final int FREE        = 2;
 
     private final int noRows;
     private final int noColumns;
     private final int noChosenColumns;
     private final int startingColumn;
     private final int noBeams;
+
 
     private Beam[] beams;
     private int beamCount;
@@ -39,7 +44,7 @@ public class BeamSolver {
         beamCount++;
     }
 
-    public String answer() {
+    public Answer answer() {
         fillBeamMap();
         fillGraph();
         boolean[] mustBeRemoved = findBeamsToRemove();
@@ -79,15 +84,18 @@ public class BeamSolver {
     }
 
     //Kahn's
-    private String removeBeams(boolean[] mustBeRemoved) {
+    private Answer removeBeams(boolean[] mustBeRemoved){
         boolean anyToRemove = false;
+        // why not just check whether mustBeRemoved is empty (we are iterating over ALL THE BEAMS)
+        // (THAT IS 10060)
         for (boolean b : mustBeRemoved) 
             if (b) {
                 anyToRemove = true;
                 break;
             }
 
-        if (!anyToRemove) return "False alarm";
+        // this is the ugliest shit to man 
+        if (!anyToRemove) return new Answer(FALSE_ALARM, null, 0);
 
         int[] permutation = new int[digraph.numNodes()];
         int permSize = 0;
@@ -114,9 +122,10 @@ public class BeamSolver {
             }
         }
 
-        if (permSize < beamsRemoved) return "Disaster";
-        if (permSize == 0) return "";
-        return stringifyResult(permutation, permSize);
+        if (permSize < beamsRemoved) return new Answer(DISASTER, null, 0);
+        //i dont understand why we need this
+        //if (permSize == 0) return "";
+        return new Answer(FREE, permutation, permSize);
     }
 
 
