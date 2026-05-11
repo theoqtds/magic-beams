@@ -95,16 +95,13 @@ public class BeamSolver {
     //Kahn's
     private Answer removeBeams(findRemove info){
         int permSize            = 0;
-
         int[] inDegree          = new int[digraph.numNodes()];
         int[] permutation       = new int[digraph.numNodes()];
         Queue<Integer> ready    = new PriorityQueue<>();
-
         int[] toRemove          = info.toRemove();
         int beamsRemoved        = info.amountFound();
         boolean[] mustBeRemoved = info.found();
 
-        // now we dont know which node we have to addres
         for (int i = 0; i < beamsRemoved; i++) {
             int remove = toRemove[i];
             inDegree[remove] = digraph.inDegree(remove);
@@ -115,27 +112,13 @@ public class BeamSolver {
         while (!ready.isEmpty()) {
             int node = ready.remove();
             permutation[permSize++] = node;
-            for (int v : digraph.outAdjacentNodes(node)) {
+            for (int v : digraph.outAdjacentNodes(node))
                 if (mustBeRemoved[v]) {
                     inDegree[v]--;
                     if (inDegree[v] == 0) 
                         ready.add(v);
                 }
-            }
         }
-        //System.out.println();
-        //System.out.printf("mustBeRemoved: ");
-        //for (boolean i : mustBeRemoved) {
-        //    System.out.printf(" " + i);
-        //}
-        //System.out.println();
-        //System.out.printf("permutation: ");
-        //for (int i : permutation) {
-        //    System.out.printf(" "+i);
-        //}
-        //System.out.println();
-        //System.out.println("beamsRemoved: "+beamsRemoved);
-        //System.out.println("permSize: "+permSize);
         if (permSize < beamsRemoved) return new Answer(DISASTER, null, 0);
         //i dont understand why we need this
         //if (permSize == 0) return "";
@@ -166,71 +149,87 @@ public class BeamSolver {
         for (int i = 0; i < noBeams; i++) {
             Beam beam = beams[i];
             switch (beam.direction()) {
-                case NORTH: navigateMapNorth(beam, seenBeamsId); break;
-                case EAST: navigateMapEast(beam, seenBeamsId);  break;
-                case WEST: navigateMapWest(beam, seenBeamsId);  break;
-                case SOUTH: navigateMapSouth(beam, seenBeamsId);  break;
+                case NORTH: navigateMapNorth(beam); break;
+                case EAST: navigateMapEast(beam);  break;
+                case WEST: navigateMapWest(beam);  break;
+                case SOUTH: navigateMapSouth(beam);  break;
             }
         }
     }
 
     // NAVIGATE MAPS
-    private void navigateMapNorth(Beam beam, int[] seenBeamsId) {
+    private void navigateMapNorth(Beam beam) {
         int beamExit = beam.row() - beam.length();
         int blockingBeamIdx, blockingBeamId;
         for (int i = beamExit; i >= 0; i--) {
             blockingBeamId = beamIdMap[i][beam.column()];
             if (blockingBeamId != EMPTY ) {
                 blockingBeamIdx = blockingBeamId - 1;
-                if (seenBeamsId[blockingBeamIdx] != beam.id()){
-                    digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
-                    seenBeamsId[blockingBeamIdx] = beam.id();
-                }
+                // how could it possibly be the same as beam.id()? 
+                //if (seenBeamsId[blockingBeamIdx] != beam.id()){
+                digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
+                Beam tmp = beams[blockingBeamIdx];
+                // CHECK IF THIS IS THE RIGHT LOGIC
+                if (tmp.direction() == beam.direction())
+                    i -= tmp.length();
+                //}
             }
         }
     }
 
-    private void navigateMapEast(Beam beam, int[] seenBeamsId) {
+    private void navigateMapEast(Beam beam) {
         int beamExit = beam.column() + beam.length(); 
         int blockingBeamIdx, blockingBeamId;
         for (int i = beamExit ; i < noColumns; i++) {
             blockingBeamId = beamIdMap[beam.row()][i];
             if (blockingBeamId != EMPTY ) {
                 blockingBeamIdx = blockingBeamId - 1;
-                if (seenBeamsId[blockingBeamIdx] != beam.id()){
-                    digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
-                    seenBeamsId[blockingBeamIdx] = beam.id();
-                }
+                // how could it possibly be the same as beam.id()? 
+                //if (seenBeamsId[blockingBeamIdx] != beam.id()){
+                digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
+                Beam tmp = beams[blockingBeamIdx];
+                // CHECK IF THIS IS THE RIGHT LOGIC
+                if (tmp.direction() == beam.direction())
+                    i += tmp.length();
+                //}
             }
         }
     }
 
-    private void navigateMapWest(Beam beam,  int[] seenBeamsId) {
+    private void navigateMapWest(Beam beam) {
         int beamExit = beam.column() - beam.length();
         int blockingBeamIdx, blockingBeamId;
         for (int i = beamExit ; i >= 0; i--) {
             blockingBeamId = beamIdMap[beam.row()][i];
             if (blockingBeamId != EMPTY ) {
                 blockingBeamIdx = blockingBeamId - 1;
-                if (seenBeamsId[blockingBeamIdx] != beam.id()){
-                    digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
-                    seenBeamsId[blockingBeamIdx] = beam.id();
-                }
+                // how could it possibly be the same as beam.id()? 
+                //if (seenBeamsId[blockingBeamIdx] != beam.id()){
+                digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
+                Beam tmp = beams[blockingBeamIdx];
+                // CHECK IF THIS IS THE RIGHT LOGIC
+                if (tmp.direction() == beam.direction())
+                    i -= tmp.length();
+                //}
             }
         }
     }
 
-    private void navigateMapSouth(Beam beam,  int[] seenBeamsId) {
+    private void navigateMapSouth(Beam beam) {
         int beamExit = beam.row() + beam.length();
         int blockingBeamIdx, blockingBeamId;
         for (int i = beamExit; i < noRows; i++) {
             blockingBeamId = beamIdMap[i][beam.column()];
             if (blockingBeamId != EMPTY ) {
                 blockingBeamIdx = blockingBeamId - 1;
-                if (seenBeamsId[blockingBeamIdx] != beam.id()){
-                    digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
-                    seenBeamsId[blockingBeamIdx] = beam.id();
-                }
+                // how could it possibly be the same as beam.id()? 
+                //if (seenBeamsId[blockingBeamIdx] != beam.id()){
+                digraph.addEdge(blockingBeamIdx, beam.idx(), LABEL);
+                Beam tmp = beams[blockingBeamIdx];
+                // CHECK IF THIS IS THE RIGHT LOGIC
+                if (tmp.direction() == beam.direction())
+                    i += tmp.length();
+                //}
             }
         }
     }
