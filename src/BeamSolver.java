@@ -138,14 +138,6 @@ public class BeamSolver {
     }
 
     private void fillGraph() {
-        // TODO: why have this, we can just skip the 
-        // whole beam if they go in the same direction. 
-        // if they dont go in the same direction, we wont have
-        // clashing problems 
-        // (beams are lines, cannot bend:
-        //      lines either touche 0, 1 or all points)
-        int[] seenBeamsId = new int[noBeams];
-//Arrays.fill(seenBeamsId, EMPTY);
         for (int i = 0; i < noBeams; i++) {
             Beam beam = beams[i];
             switch (beam.direction()) {
