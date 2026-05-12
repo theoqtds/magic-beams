@@ -1,7 +1,7 @@
 import graph.Digraph;
-import org.w3c.dom.Node;
 
 import java.util.*;
+
 
 public class BeamSolver {
     public static final char NORTH = 'N';
@@ -9,15 +9,22 @@ public class BeamSolver {
     public static final char WEST = 'W';
     public static final char SOUTH = 'S';
     public static final int LABEL = 1;
+    public static final int EMPTY = 0;
+    public static final int DISASTER    = 0;
+    public static final int FALSE_ALARM = 1;
+    public static final int FREE        = 2;
 
     private final int noRows;
     private final int noColumns;
     private final int noChosenColumns;
     private final int startingColumn;
-    private final int noBeams;
+    private final int beamsSize;
+
+    private record findRemove(int amountFound, boolean[] found, int[] toRemove) {}
 
     private Beam[] beams;
-    private int beamMap[][];
+    private int beamCount;
+    private int beamIdMap[][];
     private Digraph<Integer> digraph;
 
     public BeamSolver(int noRows, int noColumns, int noChosenColumns, int startingColumn, int noBeams) {
@@ -25,113 +32,99 @@ public class BeamSolver {
         this.noColumns = noColumns;
         this.noChosenColumns = noChosenColumns;
         this.startingColumn =  startingColumn;
-        this.noBeams = noBeams;
-        this.beams = new Beam[noBeams];
-        this.beamMap = new int[noRows][noColumns];
-        this.digraph = new Digraph<>(noBeams);
+        this.beamsSize = noBeams + 1;
+        // idx 0 saved for the empty spaces
+        this.beams = new Beam[beamsSize];
+        this.beamIdMap = new int[noRows][noColumns];
+        this.digraph = new Digraph<>(beamsSize);
+        this.beamCount = 1;
     }
 
-    public void addBeam(int index, int row, int column, int length, char direction) {
-        beams[index] = new Beam(index, row, column, length, direction);
+    public void addBeam(int row, int column, int length, char direction) {
+        beams[beamCount] = new Beam(beamCount, row, column, length, direction);
+        beamCount++;
     }
 
-    public String answer() {
+    public Answer answer() {
         fillBeamMap();
         fillGraph();
-        boolean[] mustBeRemoved = findBeamsToRemove();
+        findRemove findRemoveAnswer = findBeamsToRemove();
+        
+        if (findRemoveAnswer.amountFound() > 0)
+            return removeBeams(findRemoveAnswer);
 
-        return removeBeams(mustBeRemoved);
+        return new Answer(FALSE_ALARM, null, 0);
     }
-
+    
     //BFS
-    private boolean[] findBeamsToRemove() {
-        boolean[] found = new boolean[noBeams];
-
-        for (int i = startingColumn; i < startingColumn + noChosenColumns; i++) {
+    private findRemove findBeamsToRemove() {
+        boolean[] found = new boolean[beamsSize];
+        int[] toRemove  = new int[beamsSize];
+        int amountFound = 0;
+        for (int i = startingColumn; i < startingColumn + noChosenColumns; i++)
             for (int j = 0; j < noRows; j++) {
-                int beamId = beamMap[j][i];
-                if (beamId != -1 && !found[beamId]) {
-                    bfsExplore(digraph, found, beamId);
-                }
+                int beamId = beamIdMap[j][i];
+                if (beamId != EMPTY && !found[beamId])
+                    amountFound = bfsExplore(digraph, found, beamId, toRemove, amountFound);
             }
-        }
-        return found;
+        return new findRemove(amountFound, found, toRemove);
     }
 
-    private void bfsExplore(Digraph<Integer> graph, boolean[] found, int root) {
+    // returns the next index jumped "toRemoveCount" jumps to
+    private int bfsExplore(Digraph<Integer> graph, boolean[] found, int root, int[] toRemove, int toRemoveCount) {
+        int count = toRemoveCount;
         Queue<Integer> waiting = new ArrayDeque<>();
         waiting.add(root);
         found[root] = true;
         do {
             int node = waiting.remove();
+            toRemove[count++] = node;
             for (int v : graph.inAdjacentNodes(node))
                 if (!found[v]) {
                     found[v] = true;
                     waiting.add(v);
                 }
         } while (!waiting.isEmpty());
+        return count;
     }
 
     //Kahn's
-    private String removeBeams(boolean[] mustBeRemoved) {
-        boolean anyToRemove = false;
-        for (boolean b : mustBeRemoved) {
-            if (b) {
-                anyToRemove = true;
-                break;
-            }
-        }
+    private Answer removeBeams(findRemove info){
+        int permSize            = 0;
+        int[] inDegree          = new int[digraph.numNodes()];
+        int[] permutation       = new int[digraph.numNodes()];
+        Queue<Integer> ready    = new PriorityQueue<>();
+        int[] toRemove          = info.toRemove();
+        int beamsRemoved        = info.amountFound();
+        boolean[] mustBeRemoved = info.found();
 
-        if (!anyToRemove) return "False alarm";
-
-        int[] permutation = new int[digraph.numNodes()];
-        int permSize = 0;
-        int beamsRemoved = 0;
-        Queue<Integer> ready = new PriorityQueue<>();
-        int[] inDegree = new int[digraph.numNodes()];
-
-        for (int v : digraph.nodes()) {
-            if (mustBeRemoved[v]){
-                beamsRemoved++;
-                inDegree[v] = digraph.inDegree(v);
-                if (inDegree[v] == 0) ready.add(v);
-            }
+        for (int i = 0; i < beamsRemoved; i++) {
+            int remove = toRemove[i];
+            inDegree[remove] = digraph.inDegree(remove);
+            if (inDegree[remove] == 0) 
+                ready.add(remove);
         }
 
         while (!ready.isEmpty()) {
             int node = ready.remove();
-            permutation[permSize++] = node;
-            for (int v : digraph.outAdjacentNodes(node)) {
+            // return the actual index of the ray
+            permutation[permSize++] = node-1;
+            for (int v : digraph.outAdjacentNodes(node))
                 if (mustBeRemoved[v]) {
                     inDegree[v]--;
-                    if (inDegree[v] == 0) ready.add(v);
+                    if (inDegree[v] == 0) 
+                        ready.add(v);
                 }
-            }
         }
-
-        if (permSize < beamsRemoved) return "Disaster";
-        if (permSize == 0) return "";
-        return stringifyResult(permutation, permSize);
-    }
-
-    private static String stringifyResult(int[] permutation, int permSize) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(permutation[0] + 1);
-        for (int i = 1; i < permSize; i++) {
-            sb.append(" ").append(permutation[i] + 1);
-        }
-
-        return sb.toString();
+        if (permSize < beamsRemoved) return new Answer(DISASTER, null, 0);
+        //i dont understand why we need this
+        //if (permSize == 0) return "";
+        return new Answer(FREE, permutation, permSize);
     }
 
     private void fillBeamMap() {
-        for (int i = 0; i < noRows; i++) {
-            Arrays.fill(beamMap[i], -1);
-        }
-
-        for (int i = 0; i < noBeams; i++) {
+        for (int i = 1; i < beamsSize; i++) {
             Beam beam = beams[i];
-
             switch (beam.direction()) {
                 case NORTH: fillMapNorth(beam); break;
                 case EAST: fillMapEast(beam); break;
@@ -141,82 +134,102 @@ public class BeamSolver {
         }
     }
 
+    // FILL MAPS    
     private void fillMapNorth(Beam beam) {
-        for (int i = beam.row(); i > beam.row() - beam.length(); i--) {
-            beamMap[i][beam.column()] = beam.id();
+        int lastFill = beam.row() - beam.length();
+        for (int i = beam.row(); i > lastFill; i--) {
+            beamIdMap[i][beam.column()] = beam.id();
         }
     }
 
     private void fillMapEast(Beam beam) {
-        for (int i = beam.column(); i < beam.column() + beam.length(); i++) {
-            beamMap[beam.row()][i] = beam.id();
+        int lastFill = beam.column() + beam.length();
+        for (int i = beam.column(); i < lastFill; i++) {
+            beamIdMap[beam.row()][i] = beam.id();
         }
     }
 
     private void fillMapWest(Beam beam) {
-        for (int i = beam.column(); i > beam.column() - beam.length(); i--) {
-            beamMap[beam.row()][i] = beam.id();
+        int lastFill = beam.column() - beam.length();
+        for (int i = beam.column(); i > lastFill; i--) {
+            beamIdMap[beam.row()][i] = beam.id();
         }
     }
 
     private void fillMapSouth(Beam beam) {
-        for (int i = beam.row(); i < beam.row() + beam.length(); i++) {
-            beamMap[i][beam.column()] = beam.id();
+        int lastFill = beam.row() + beam.length();
+        for (int i = beam.row(); i < lastFill; i++) {
+            beamIdMap[i][beam.column()] = beam.id();
         }
     }
-
     private void fillGraph() {
-        int[] seenBeams = new int[noBeams];
-        Arrays.fill(seenBeams, -1);
-
-        for (int i = 0; i < noBeams; i++) {
+        for (int i = 1; i < beamsSize; i++) {
             Beam beam = beams[i];
             switch (beam.direction()) {
-                case NORTH: navigateMapNorth(beam, seenBeams); break;
-                case EAST: navigateMapEast(beam, seenBeams);  break;
-                case WEST: navigateMapWest(beam, seenBeams);  break;
-                case SOUTH: navigateMapSouth(beam, seenBeams);  break;
+                case NORTH: navigateMapNorth(beam); break;
+                case EAST: navigateMapEast(beam);  break;
+                case WEST: navigateMapWest(beam);  break;
+                case SOUTH: navigateMapSouth(beam);  break;
             }
         }
     }
 
-    private void navigateMapNorth(Beam beam, int[] seenBeams) {
-        for (int i = beam.row() - beam.length(); i >= 0; i--) {
-            int blockingBeamId = beamMap[i][beam.column()];
-            if (blockingBeamId != -1 && seenBeams[blockingBeamId] != beam.id()) {
+    // NAVIGATE MAPS
+    private boolean checkSameAxis(Beam tmp, Beam beam){
+        return switch (beam.direction()) {
+            case NORTH, SOUTH -> tmp.direction() == NORTH || tmp.direction() == SOUTH;
+            case WEST, EAST   -> tmp.direction() == WEST || tmp.direction() == EAST;
+            default -> false;
+        };
+    }
+
+
+    // checks whether the blockingBeamId is actually blocking the beam
+    // returns how many "houses to skip" if it is actually blocking
+    private int processBlockedBeam(int blockingBeamId, Beam beam){
+            if (blockingBeamId != EMPTY ) {
                 digraph.addEdge(blockingBeamId, beam.id(), LABEL);
-                seenBeams[blockingBeamId] = beam.id();
+                Beam tmp = beams[blockingBeamId];
+                if (checkSameAxis(tmp, beam))
+                    return tmp.length() - 1;
             }
+        return 0;
+    }
+
+    private void navigateMapNorth(Beam beam) {
+        int beamExit = beam.row() - beam.length();
+        int blockingBeamId;
+        for (int i = beamExit; i >= 0; i--) {
+            blockingBeamId = beamIdMap[i][beam.column()];
+            // skips length - 1 if both beams are in the same direction or 0 if not
+            i -= processBlockedBeam(blockingBeamId, beam);
         }
     }
 
-    private void navigateMapEast(Beam beam, int[] seenBeams) {
-        for (int i = beam.column() + beam.length(); i < noColumns; i++) {
-            int blockingBeamId = beamMap[beam.row()][i];
-            if (blockingBeamId != -1 && seenBeams[blockingBeamId] != beam.id()) {
-                digraph.addEdge(blockingBeamId, beam.id(), LABEL);
-                seenBeams[blockingBeamId] = beam.id();
-            }
+    private void navigateMapEast(Beam beam) {
+        int beamExit = beam.column() + beam.length(); 
+        int blockingBeamId;
+        for (int i = beamExit ; i < noColumns; i++) {
+            blockingBeamId = beamIdMap[beam.row()][i];
+            i += processBlockedBeam(blockingBeamId, beam);
         }
     }
 
-    private void navigateMapWest(Beam beam,  int[] seenBeams) {
-        for (int i = beam.column() - beam.length(); i >= 0; i--) {
-            int blockingBeamId = beamMap[beam.row()][i];
-            if (blockingBeamId != -1 && seenBeams[blockingBeamId] != beam.id()) {
-                digraph.addEdge(blockingBeamId, beam.id(), LABEL);
-                seenBeams[blockingBeamId] = beam.id();
-            }
+    private void navigateMapWest(Beam beam) {
+        int beamExit = beam.column() - beam.length();
+        int blockingBeamId;
+        for (int i = beamExit ; i >= 0; i--) {
+            blockingBeamId = beamIdMap[beam.row()][i];
+            i -= processBlockedBeam(blockingBeamId, beam);
         }
     }
 
-    private void navigateMapSouth(Beam beam,  int[] seenBeams) {
-        for (int i = beam.row() + beam.length(); i < noRows; i++) {
-            int blockingBeamId = beamMap[i][beam.column()];
-            if (blockingBeamId != -1 && seenBeams[blockingBeamId] != beam.id()) {
-                digraph.addEdge(blockingBeamId, beam.id(), LABEL);
-                seenBeams[blockingBeamId] = beam.id();
-            }
+    private void navigateMapSouth(Beam beam) {
+        int beamExit = beam.row() + beam.length();
+        int blockingBeamId;
+        for (int i = beamExit; i < noRows; i++) {
+            blockingBeamId = beamIdMap[i][beam.column()];
+            i += processBlockedBeam(blockingBeamId, beam);
         }
     }
 }
