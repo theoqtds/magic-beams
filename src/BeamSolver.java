@@ -175,14 +175,22 @@ public class BeamSolver {
     }
 
     // NAVIGATE MAPS
-    
+    private boolean checkSameAxis(Beam tmp, Beam beam){
+        return switch (beam.direction()) {
+            case NORTH, SOUTH -> tmp.direction() == NORTH || tmp.direction() == SOUTH;
+            case WEST, EAST   -> tmp.direction() == WEST || tmp.direction() == EAST;
+            default -> false;
+        };
+    }
+
+
     // checks whether the blockingBeamId is actually blocking the beam
     // returns how many "houses to skip" if it is actually blocking
     private int processBlockedBeam(int blockingBeamId, Beam beam){
             if (blockingBeamId != EMPTY ) {
                 digraph.addEdge(blockingBeamId, beam.id(), LABEL);
                 Beam tmp = beams[blockingBeamId];
-                if (tmp.direction() == beam.direction())
+                if (checkSameAxis(tmp, beam))
                     return tmp.length() - 1;
             }
         return 0;
