@@ -11,7 +11,7 @@ public class Main {
     private static final int    COLUMNS     = 1;
     private static final int NO_CHOSEN_COLUMNS = 0;
     private static final int STARTING_CHOSEN_COLUMN = 1;
-    private static final String FALSE_MSG = "False Alarm";
+    private static final String FALSE_MSG = "False alarm";
     private static final String DISASTER_MSG  = "Disaster";
     private static final String EMPTY  = "";
 
