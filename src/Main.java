@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.StringTokenizer;
 
 public class Main {
 
@@ -16,32 +17,32 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st;
 
         // The first line indicates how many test cases/grids will follow
         int noTests = Integer.parseInt(input.readLine());
 
         // Process each test case individually
         for (int i = 0; i < noTests; i++) {
-            String[] mapDimensions = input.readLine().split(SEPARATOR);
-            int noRows = Integer.parseInt(mapDimensions[ROWS]);
-            int noColumns = Integer.parseInt(mapDimensions[COLUMNS]);
+            st = new StringTokenizer(input.readLine());
+            int noRows = Integer.parseInt(st.nextToken());
+            int noColumns = Integer.parseInt(st.nextToken());
 
-            String[] chosenColumns = input.readLine().split(SEPARATOR);
-            int noChosenColumns = Integer.parseInt(chosenColumns[NO_CHOSEN_COLUMNS]);
-            int startingColumn = Integer.parseInt(chosenColumns[STARTING_CHOSEN_COLUMN]);
+            st = new StringTokenizer(input.readLine());
+            int noChosenColumns = Integer.parseInt(st.nextToken());
+            int startingColumn = Integer.parseInt(st.nextToken());
 
             int noBeams = Integer.parseInt(input.readLine());
-            
             // Initialize a new solver for this specific test case
             BeamSolver pathSolver = new BeamSolver(noRows, noColumns, noChosenColumns, startingColumn, noBeams);
 
             // Read the grid row by row and add it to the solver's map
             for (int j = 0; j < noBeams; j++) {
-                String[] beamChars = input.readLine().split(SEPARATOR);
-                int row = Integer.parseInt(beamChars[0]);
-                int column = Integer.parseInt(beamChars[1]);
-                int length = Integer.parseInt(beamChars[2]);
-                char direction = beamChars[3].charAt(0);
+                st = new StringTokenizer(input.readLine());
+                int row = Integer.parseInt(st.nextToken());
+                int column = Integer.parseInt(st.nextToken());
+                int length = Integer.parseInt(st.nextToken());
+                char direction = st.nextToken().charAt(0);
                 pathSolver.addBeam(row, column, length, direction);
             }
 
