@@ -12,6 +12,7 @@
 \usepackage[dvipsnames]{xcolor}
 \usepackage{parskip}
 \usepackage{graphicx}
+\usepackage{tikz}
 
 \usepackage{geometry}
 \geometry{
@@ -43,7 +44,7 @@
 
 \author{Felipe Magno (Num.\ 67994) and Theo da Silva (Num.\ 68548)}
 
-\authorrunning{First Author and Second Author – Project N}
+\authorrunning{Felipe Magno and Theo da Silva – Project 2}
 
 
 \institute{NOVA School of Science and Technology -- Universidade NOVA de Lisboa}
@@ -65,10 +66,90 @@
 
 \section{Problem Resolution}
 
-\textcolor{RoyalBlue}{For the second assignment, briefly explain the solution (maximum two A4 pages).}
+To start, in terms of data structures for our solution, we decided to use a two-dimensional array to store the positions of the beams. Moreover, we decided to use a graph implementation with adjacent lists (successors and predecessors).  In terms of algorithms, we decided to implement a BFS search to filter any unecessary nodes to the solution. Furthermore, Kahn's algorithm (topological sort) with built in acyclcity checking is used, so that disasters and beam removal order could be determined.
 
-To start, in terms of data structures for our solution we decided to use a graph implementation with adjacent lists (successors and predecessors). We also decided to use a two-dimensional array to store the positions of the beams. In terms of algorithms, we decided to implement a BFS search to filter any unecessary nodes to the solution and Kahn's algorithm (topological sort) with built in acyclcity checking, so that disasters and beam removal order could be determined.
+Firstly, we decided to incorporate a two dimensional array before beginning any operations with graphs or nodes. This was done so that beam dependancies could more easily and intuitively be made. The map is filled by iteration through every beam and filling the map based on the direction and length of the beam, filling up all coordinates that the beam belongs to with its integer ID.
 
+
+\begin{figure}[h]
+	\centering
+	{\large
+	\begin{tikzpicture}[x=0.6cm, y=0.6cm]
+	\newcommand{\drawrow}[2]{
+    		\foreach \val [count=\j] in {#2} {
+        			\draw (\j,-#1) rectangle ++(1,1);
+        			\node at (\j+0.5,-#1+0.5) {\val};
+    		}
+	}
+	\drawrow{1}{0,0,6,0,0,0,0,0}
+	\drawrow{2}{0,5,6,0,4,0,0,0}
+	\drawrow{3}{0,5,1,1,4,0,0,0}
+	\drawrow{4}{0,5,0,3,2,2,2,2}
+	\drawrow{5}{0,0,0,3,0,0,0,0}
+	\end{tikzpicture}
+	}
+	\caption{Filled in two dimensional array using problem description example }
+\end{figure}
+
+After the map has been filled, we iterate through each beam, starting from where it ends and checking the tiles in that direction until the end of the map. For every unique number it passes a new edge is added to the graph corresponding to the dependancy it has on other beams. For the graph implementation itself, we decided to use an adjacent list both with sucessor and predessesor data structures as both inAdjacentNodes and outAdjacentNodes need to be performed on BFS and Topological Sorting. This decision makes both these operations more efficient temporaly.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm,
+    every node/.style={circle, draw, minimum size=0.8cm},
+    ->, >=stealth
+]
+    % Nodes
+    \node (1) {1};
+    \node (3) [above of=1] {3};
+    \node (4) [left of=1]  {4};
+    \node (5) [above of=4] {5};
+    \node (6) [right of=1] {6};
+    \node (2) [above of=6] {2};
+
+    % Edges
+    \draw (4) -- (1);
+    \draw (1) -- (6);
+\end{tikzpicture}
+\caption{Dependancy graph of the problem description example}
+\end{figure}
+
+\newpage
+Subsequently, now that we have the graph to work with, we can process the graph using Breadth First Search and Topological Sort to get our final answer. We use BFS to find the nodes that necessarily need to be processed (beams to remove) given the columns you want to clear. This is done by executing bfsExplore( ) on any unfound nodes that belong to the columns you want to clear.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=2cm,
+    every node/.style={circle, draw, minimum size=0.8cm},
+    processed/.style={fill=green!40!gray},
+    ->, >=stealth
+]
+    % Nodes
+    \node[processed] (1) {1};
+    \node[processed] (3) [above of=1] {3};
+    \node[processed] (4) [left of=1]  {4};
+    \node[processed] (5) [above of=4] {5};
+    \node[processed] (6) [right of=1] {6};
+    \node (2) [above of=6] {2};
+
+    % Edges
+    \draw (4) -- (1);
+    \draw (1) -- (6);
+\end{tikzpicture}
+\caption{Nodes processed by BFS. Explored nodes are in green.}
+\end{figure}
+
+Once BFS is executed, we have a boolean array holding information about the nodes found, with the index of the array associating to if the node of that id was processed by BFS. An int array is also generated that holds the ids of the nodes that were found, this is used to iterate through the Topological Sort algorithm.
+
+After BFS is executed, the Topological Sort algorithm is executed to remove the beams in the right order. Since the problem states that whenever multiple beams can be freed, the one with the lowest identifier must be freed, a priority queue was used.
+
+The final solution for the problem description example would then be:
+
+\begin{center}
+	3 4 1 5 6
+\end{center}
 
 \section{Time Complexity}
 
