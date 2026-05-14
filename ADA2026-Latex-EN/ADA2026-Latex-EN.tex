@@ -1,0 +1,94 @@
+% Design and Analysis of Algorithms 2025/26 - Project Report Template.
+%
+% Based on the LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.24 (29-Jan-2024)
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%% DO NOT CHANGE %%%%%%%%%%%%%%%%%%
+\documentclass[runningheads]{llncs}
+\usepackage[utf8]{inputenc}
+%\usepackage[portuges]{babel}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{parskip}
+\usepackage{graphicx}
+
+\usepackage{geometry}
+\geometry{
+  a4paper,         
+  top=2.5cm, 
+  bottom=3cm, 
+  left=2cm, 
+  right=2cm, 
+  heightrounded,   
+  hratio=1:1,      
+  vratio=2:3,     
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%% Pacotes extra %%%%%%%%%%%%%%%%%
+% You can add extra packages here.
+% The base layout (margins, headers, font type and size, etc.) should not be modified.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Design and Analysis of Algorithms 2025/26 -- Project N}
+
+\author{Felipe Magno (Num.\ 67994) and Theo da Silva (Num.\ 68548)}
+
+\authorrunning{First Author and Second Author – Project N}
+
+
+\institute{NOVA School of Science and Technology -- Universidade NOVA de Lisboa}
+
+\maketitle
+
+
+%%%%%%%%%%%%% Remove this block %%%%%%%%%%%%%
+\bigskip
+\textcolor{RoyalBlue}{Reports should focus on the following points, clearly and succinctly, assuming the problem statement is known. In particular, you do not need to specify what each of the letters used in Section \textbf{Constraints} represents.}
+
+\textcolor{RoyalBlue}{\textbf{Page Limit: 5.}}
+
+\begin{center}
+    \large\textcolor{RoyalBlue}{\textbf{NOTE: All text in blue should be removed.}}
+\end{center}
+%%%%%%%%%%%%% End of the block to remove %%%%%%%%%%%%%
+
+
+\section{Problem Resolution}
+
+\textcolor{RoyalBlue}{For the second assignment, briefly explain the solution (maximum two A4 pages).}
+
+To start, in terms of data structures for our solution we decided to use a graph implementation with adjacent lists (successors and predecessors). We also decided to use a two-dimensional array to store the positions of the beams. In terms of algorithms, we decided to implement a BFS search to filter any unecessary nodes to the solution and Kahn's algorithm (topological sort) with built in acyclcity checking, so that disasters and beam removal order could be determined.
+
+
+\section{Time Complexity}
+
+\textcolor{RoyalBlue}{Calculate the time complexity of the algorithm, justifying the parts 
+and the result.}
+
+\textcolor{RoyalBlue}{Use different ``letters'' to represent different ``quantities''. If you do not use the letters given in the problem statement, do not forget to indicate what each letter represents.}
+
+
+\section{Space Complexity}
+
+\textcolor{RoyalBlue}{Calculate the space complexity of the program, justifying the parts and the result.}
+
+\textcolor{RoyalBlue}{Use different ``letters'' to represent different ``quantities''. If you do not use the letters given in the problem statement, do not forget to indicate what each letter represents.}
+
+\section{Conclusions}
+
+\textcolor{RoyalBlue}{List the strengths and weaknesses of your solution, the alternatives studied or that deserved to be studied, possible improvements, etc.}
+
+\textcolor{RoyalBlue}{Clearly specify which websites were consulted and which AI tools were used, for what purposes, and how the obtained information was used, both to develop the program and to produce this report.}
+
+
+\end{document}
