@@ -20,8 +20,6 @@ public class BeamSolver {
     private final int startingColumn;
     private final int beamsSize;
 
-    private record findRemove(int amountFound, boolean[] found, int[] toRemove) {}
-
     private Beam[] beams;
     private int beamCount;
     private int beamIdMap[][];
@@ -48,7 +46,7 @@ public class BeamSolver {
     public Answer answer() {
         fillBeamMap();
         fillGraph();
-        findRemove findRemoveAnswer = findBeamsToRemove();
+        FindRemove findRemoveAnswer = findBeamsToRemove();
         
         if (findRemoveAnswer.amountFound() > 0)
             return removeBeams(findRemoveAnswer);
@@ -57,7 +55,7 @@ public class BeamSolver {
     }
     
     //BFS
-    private findRemove findBeamsToRemove() {
+    private FindRemove findBeamsToRemove() {
         boolean[] found = new boolean[beamsSize];
         int[] toRemove  = new int[beamsSize];
         int amountFound = 0;
@@ -67,7 +65,7 @@ public class BeamSolver {
                 if (beamId != EMPTY && !found[beamId])
                     amountFound = bfsExplore(digraph, found, beamId, toRemove, amountFound);
             }
-        return new findRemove(amountFound, found, toRemove);
+        return new FindRemove(amountFound, found, toRemove);
     }
 
     // returns the next index jumped "toRemoveCount" jumps to
@@ -89,7 +87,7 @@ public class BeamSolver {
     }
 
     //Kahn's
-    private Answer removeBeams(findRemove info){
+    private Answer removeBeams(FindRemove info){
         int permSize            = 0;
         int[] inDegree          = new int[digraph.numNodes()];
         int[] permutation       = new int[digraph.numNodes()];
