@@ -13,6 +13,9 @@
 \usepackage{parskip}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
 
 \usepackage{geometry}
 \geometry{
@@ -151,25 +154,87 @@ The final solution for the problem description example would then be:
 	3 4 1 5 6
 \end{center}
 
+
+\definecolor{RoyalBlue}{RGB}{65, 105, 225}
+
+\section{Notation and Variable Definitions}
+
+To analyze the complexity of the algorithm, the following letters represent specific quantities involved in the process:
+
+\begin{itemize}
+    \item \textbf{$R$}: The number of rows in the grid.
+    \item \textbf{$C$}: The number of columns in the grid.
+    \item \textbf{$B$}: The total number of beams provided in the input.
+    \item \textbf{$K$}: The number of specific columns chosen to be cleared.
+    \item \textbf{$D$}: The maximum dimension of the grid, defined as $\max(R, C)$.
+    \item \textbf{$E$}: The number of graph edges created representing dependencies between beams.
+    \item \textbf{$F$}: The number of beams that must be removed or reached by BFS ($F \le B$).
+\end{itemize}
+
 \section{Time Complexity}
 
-\textcolor{RoyalBlue}{Calculate the time complexity of the algorithm, justifying the parts 
-and the result.}
+\begin{itemize}
+    \item \textbf{Setup and Mapping}: Allocating the grid map and marking cells occupied by beams takes $O(RC + B \cdot D)$.
+    \item \textbf{Graph Construction}: Scanning from each beam's exit to find blockers takes $O(B \cdot D)$ plus $O(E)$ for edge insertions.
+    \item \textbf{Target Search}: Scanning the $K$ chosen columns across $R$ rows and running a BFS through the graph takes $O(KR + F + E)$.
+    \item \textbf{Topological Sort}: Removing $F$ beams using a PriorityQueue for ordered results takes $O(F \log F + E)$.
+\end{itemize}
 
-\textcolor{RoyalBlue}{Use different ``letters'' to represent different ``quantities''. If you do not use the letters given in the problem statement, do not forget to indicate what each letter represents.}
-
+\textbf{Resulting Time Complexity}: 
+\[ O(RC + B \cdot D + KR + F \log F + E) \]
 
 \section{Space Complexity}
 
-\textcolor{RoyalBlue}{Calculate the space complexity of the program, justifying the parts and the result.}
+\begin{itemize}
+    \item \textbf{Grid Storage}: The \texttt{beamIdMap} requires $O(RC)$ space to store the state of every cell.
+    \item \textbf{Beam and Graph Records}: Storing $B$ beam objects and their $E$ dependency edges requires $O(B + E)$.
+    \item \textbf{Auxiliary Arrays}: Arrays for tracking in-degrees and BFS visitation are bounded by $O(B)$.
+\end{itemize}
 
-\textcolor{RoyalBlue}{Use different ``letters'' to represent different ``quantities''. If you do not use the letters given in the problem statement, do not forget to indicate what each letter represents.}
+\textbf{Resulting Space Complexity}: 
+\[ O(RC + B + E) \]
+In the worst-case scenario with a dense graph ($E = O(B^2)$), this simplifies to $O(RC + B^2)$.
 
-\section{Conclusions}
+\section{Conclusion}
 
-\textcolor{RoyalBlue}{List the strengths and weaknesses of your solution, the alternatives studied or that deserved to be studied, possible improvements, etc.}
+  \subsection{Strengths}
+
+  The solution has the following strengths:
+
+  \begin{itemize}
+      \item We used records such as \texttt{Beam}, \texttt{Answer}, and \texttt{FindRemove} to keep data representation
+  simpler and to be able to pass several values throught the algorithms.
+      \item The grid \texttt{beamIdMap} allows constant-time lookup of which beam occupies a given cell.
+      \item Adding 1 to \texttt{beamId} before setting their position in beamIdMap, allows us to use the value 0 to identify the empty spaces. That way we dont have to set the whole array to (eg. -1) before inserting the beamIds. Before returning the result we subtract 1 from the beamId to return the correct value.
+      \item The array \texttt{found} allows constant-time lookup of which beams have to be removed, by setting found[beamId] = true on the beams that must be removed
+      \item The array \texttt{toRemove} allows ease of access of JUST the beams that have to be removed from the grid. It is used alongside with amountFound, so that we dont look further than we need in this array. 
+      \item BFS is used to find only the beams that can affect the chosen columns.
+      \item Kahn's algorithm is used to compute a valid removal order.
+      \item Cycles are detected naturally: if not all required beams can be removed by the topological sort, the result is
+  \texttt{Disaster}.
+      \item We use a \texttt{PriorityQueue} correctly match the specification of removing beams in ascending order.
+  \end{itemize}
+
+  \subsection{Weaknesses}
+
+  The main weakness of the solution is its memory usage. The algorithm allocates a full grid:
+
+  \[
+  \texttt{beamIdMap} \in O(R \cdot C)
+  \]
+
+  where $R$ is the number of rows and $C$ is the number of columns. This is efficient for direct access, but it can be
+  expensive when the grid is large and sparse.
+
+  Another weakness is the possible size of the graph. In the worst case, many beams can block many other beams, producing
+  up to:
+
+  \[
+  E = O(B^2)
+  \]
+
+  edges, where $B$ is the number of beams.
 
 \textcolor{RoyalBlue}{Clearly specify which websites were consulted and which AI tools were used, for what purposes, and how the obtained information was used, both to develop the program and to produce this report.}
-
 
 \end{document}
