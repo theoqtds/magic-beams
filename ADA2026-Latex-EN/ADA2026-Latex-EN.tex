@@ -54,19 +54,6 @@
 
 \maketitle
 
-
-%%%%%%%%%%%%% Remove this block %%%%%%%%%%%%%
-\bigskip
-\textcolor{RoyalBlue}{Reports should focus on the following points, clearly and succinctly, assuming the problem statement is known. In particular, you do not need to specify what each of the letters used in Section \textbf{Constraints} represents.}
-
-\textcolor{RoyalBlue}{\textbf{Page Limit: 5.}}
-
-\begin{center}
-    \large\textcolor{RoyalBlue}{\textbf{NOTE: All text in blue should be removed.}}
-\end{center}
-%%%%%%%%%%%%% End of the block to remove %%%%%%%%%%%%%
-
-
 \section{Problem Resolution}
 
 To start, in terms of data structures for our solution, we decided to use a two-dimensional array to store the positions of the beams. Moreover, we decided to use a graph implementation with adjacent lists (successors and predecessors).  In terms of algorithms, we decided to implement a BFS search to filter any unecessary nodes to the solution. Furthermore, Kahn's algorithm (topological sort) with built in acyclcity checking is used, so that disasters and beam removal order could be determined.
@@ -94,7 +81,7 @@ Firstly, we decided to incorporate a two dimensional array before beginning any 
 	\caption{Filled in two dimensional array using problem description example }
 \end{figure}
 
-After the map has been filled, we iterate through each beam, starting from where it ends and checking the tiles in that direction until the end of the map. For every unique number it passes a new edge is added to the graph corresponding to the dependancy it has on other beams. For the graph implementation itself, we decided to use an adjacent list both with sucessor and predessesor data structures as both inAdjacentNodes and outAdjacentNodes need to be performed on BFS and Topological Sorting. This decision makes both these operations more efficient temporaly.
+After the map has been filled, we iterate through each beam, starting from where it ends and checking the tiles in that direction until the end of the map. For every unique number it passes, which blocks the exit path, a new edge is added to the graph corresponding to the dependancy it has on other beams. For the graph implementation itself, we decided to use an adjacent list both with successor and predecessor data structures as both inAdjacentNodes and outAdjacentNodes need to be performed on BFS and Topological Sorting. This decision makes both these operations more efficient temporally.
 
 \begin{figure}[h]
 \centering
@@ -119,7 +106,7 @@ After the map has been filled, we iterate through each beam, starting from where
 \end{figure}
 
 \newpage
-Subsequently, now that we have the graph to work with, we can process the graph using Breadth First Search and Topological Sort to get our final answer. We use BFS to find the nodes that necessarily need to be processed (beams to remove) given the columns you want to clear. This is done by executing bfsExplore( ) on any unfound nodes that belong to the columns you want to clear.
+Subsequently, now that we have the graph to work with, we can process the graph using Breadth First Search and Topological Sort to get our final answer. We use BFS to find the nodes that necessarily need to be processed (beams to remove) given the columns you want to clear. The backward traversal through predecessors is done by executing bfsExplore( ) on any unfound nodes that belong to the columns you want to clear.
 
 \begin{figure}[h]
 \centering
@@ -144,7 +131,7 @@ Subsequently, now that we have the graph to work with, we can process the graph 
 \caption{Nodes processed by BFS (explored nodes are in green).}
 \end{figure}
 
-Once BFS is executed, we have a boolean array holding information about the nodes found, with the index of the array associating to if the node of that id was processed by BFS. An int array is also generated that holds the ids of the nodes that were found, this is used to iterate through the Topological Sort algorithm.
+Once BFS is executed, we have a boolean array holding information about the nodes found, with the index of the array associating to if the node of that ID was processed by BFS. An int array is also generated that holds the ids of the nodes that were found, this is used to iterate through the Topological Sort algorithm more efficiently as to process only relevant nodes, instead of all of them.
 
 After BFS is executed, the Topological Sort algorithm is executed to remove the beams in the right order. Since the problem states that whenever multiple beams can be freed, the one with the lowest identifier must be freed, a priority queue was used.
 
@@ -235,6 +222,7 @@ In the worst-case scenario with a dense graph ($E = O(B^2)$), this simplifies to
 
   edges, where $B$ is the number of beams.
 
-\textcolor{RoyalBlue}{Clearly specify which websites were consulted and which AI tools were used, for what purposes, and how the obtained information was used, both to develop the program and to produce this report.}
+\vfill
+{\small\itshape Nota: We used Claude to help us format the visual representations with the tikz package.}
 
 \end{document}
