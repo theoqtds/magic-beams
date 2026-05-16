@@ -115,8 +115,6 @@ public class BeamSolver {
                 }
         }
         if (permSize < beamsRemoved) return new Answer(DISASTER, null, 0);
-        //i dont understand why we need this
-        //if (permSize == 0) return "";
         return new Answer(FREE, permutation, permSize);
     }
 
